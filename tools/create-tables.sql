@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS users (
        mood VARCHAR(8),
        message VARCHAR(256),
        active BOOLEAN,
-       photo_url VARCHAR(256)
+       photo_url VARCHAR(256),
+       sex VARCHAR(64)
 );
 
 CREATE TABLE IF NOT EXISTS visits (

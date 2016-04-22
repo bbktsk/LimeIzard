@@ -1,12 +1,12 @@
 -- name: q-user-get
 
-SELECT first_name, last_name, mood, active, message, photo_url FROM users WHERE fb_id = :fb_id;
+SELECT first_name, last_name, mood, active, message, photo_url, sex FROM users WHERE fb_id = :fb_id;
 
 -- name: q-user-insert!
 
 INSERT
-        INTO users(fb_id, first_name, last_name, mood, active, message, photo_url)
-        VALUES (:fb_id, :first_name, :last_name, :mood, :active, :message, :photo_url)
+        INTO users(fb_id, first_name, last_name, mood, active, message, photo_url, sex)
+        VALUES (:fb_id, :first_name, :last_name, :mood, :active, :message, :photo_url, :sex)
 
 -- name: q-user-update!
 
@@ -16,7 +16,8 @@ UPDATE users
            mood = :mood,
            active = :active,
            message = :message,
-           photo_url = :photo_url
+           photo_url = :photo_url,
+           sex = :sex
        WHERE fb_id = :fb_id
              
 

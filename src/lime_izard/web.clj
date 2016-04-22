@@ -18,13 +18,14 @@
   []
   (env :database-url (str "postgres:///" (env :user))))
 
-(def empty-user (apply hash-map :active false (interleave [:first_name
-                                                           :last_name
-                                                           :mood
-                                                           :message
-                                                           :photo_url
-                                                           :fb_id]
-                                                          (repeat ""))))
+(def user-fields [:first_name :last_name :mood :message :photo_url :fb_id :sex
+                  :active])
+
+(defn empty-map [fields]
+  (apply hash-map (interleave fields (repeat nil))))
+
+(defn ensure-fields [m fields]
+  (merge (empty-map fields) m))
 
 (defqueries "lime_izard/queries.sql" {:connection (db-spec)})
 
@@ -37,7 +38,7 @@
   [id data]
   (if-let [current (user-get id)]
     (q-user-update! (assoc (merge current data) :fb_id id))
-    (q-user-insert! (assoc (merge empty-user data) :fb_id id))))
+    (q-user-insert! (assoc (ensure-fields data user-fields) :fb_id id))))
 
 
 (defresource r-user-get [id]
