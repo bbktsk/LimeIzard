@@ -1,0 +1,6 @@
+{
+  "name": "Lime Izard server",
+  "description": "Lime Izard server",
+  "image": "heroku/clojure",
+  "addons": [ "heroku-postgresql" ]
+}
