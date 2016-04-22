@@ -50,7 +50,8 @@
 
 (defn new-user-valid?
   [data]
-  (nil? (:fb_id data)))
+  (println "checking" data)
+  (:fb_id data))
 
 (defn visit-valid?
   [visit]
@@ -60,6 +61,7 @@
 
 (defn handle-visit
   [id visit]
+  (println visit)
   )
 
 (defresource r-user-get [id]
@@ -71,23 +73,21 @@
   ;;; FIXME should check for existing user
   :allowed-methods [:post]
   :available-media-types ["application/json"]
-  :malformed? (fn [_] (new-user-valid? data))
+  :malformed? (fn [_] (not (new-user-valid? data)))
   :post! (fn [_] (user-create! data)))
 
 (defresource r-user-update [id data]
   :allowed-methods [:put]
   :available-media-types ["application/json"]
   :exists? (fn [_] (user-get id))
-  :put! (fn [_] (user-update id data))
-  :new? (constantly false)
-  :respond-with-entity? (constantly false))
+  :put! (fn [_] (user-update id data)))
 
-(defresource r-visit-beacon [id visit]
+(defresource r-user-visit [id visit]
   :allowed-methods [:post]
   :available-media-types ["application/json"]
   :exists? (fn [ctx] (user-get id))
-  :malformed? (fn [ctx] (visit-valid? visit))
-  :handle-ok (fn [_] (handle-visit id visit)))
+  :malformed? (fn [ctx] (not (visit-valid? visit)))
+  :post! (fn [_] (handle-visit id visit)))
 
 
 (defroutes app
@@ -100,7 +100,10 @@
                  (r-user-update id (keywordize-keys body)))
            (GET "/users/:id"
                 [id]
-                (r-user-get id)))
+                (r-user-get id))
+           (POST "/users/:id/visit"
+                 {{id :id} :params body :body}
+                 (r-user-visit id (keywordize-keys body))))
 
   ;;(route/resources "/")
   (ANY "*" []
