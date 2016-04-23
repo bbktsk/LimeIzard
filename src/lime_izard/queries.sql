@@ -22,7 +22,7 @@ UPDATE users
 
 -- name: q-beacon-by-uuid
 
-SELECT uuid, name, label, active, owner, st_x(location::geometry) AS longitude,
+SELECT id, uuid, name, label, active, owner, st_x(location::geometry) AS longitude,
 st_y(location::geometry) AS latitude FROM beacons WHERE uuid = :uuid
 
 -- name: q-insert-visit!
