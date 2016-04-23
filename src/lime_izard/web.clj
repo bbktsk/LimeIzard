@@ -79,7 +79,15 @@
     (q-insert-visit! (assoc visit :fb_id id :beacon_id beacon-id))
     {:people (keep-latest (q-get-nearby {:beacon_id beacon-id :self id}))}))
 
+(defn handle-poke
+  [id target]
+  (q-insert-poke! {:source id :target target}))
 
+(defn handle-get-user-pokes
+  [id]
+  (let [pokes (q-get-user-pokes {:self id})]
+    (q-mark-pokes-seen! {:self id})
+    pokes))
 
 (defresource r-user-get [id]
   :available-media-types ["application/json"]
@@ -112,6 +120,18 @@
   :post! (fn [_] {:result (handle-visit id visit)})
   :handle-created :result)
 
+(defresource r-user-poke [id target]
+  :allowed-methods [:post]
+  :available-media-types ["application/json"]
+  :exists? (fn [ctx] (user-get id))
+  :malformed? (fn [ctx] (println target)(not (user-get target)))
+  :post! (fn [_] (handle-poke id target)))
+
+(defresource r-user-get-pokes [id]
+  :allowed-methods [:get]
+  :available-media-types ["application/json"]
+  :exists? (fn [ctx] (user-get id))
+  :handle-ok (handle-get-user-pokes id))
 
 (defroutes app
   (context "/api" []
@@ -129,7 +149,10 @@
                 (r-user-get-beacons id))
            (POST "/users/:id/visit"
                  {{id :id} :params body :body}
-                 (r-user-visit id (keywordize-keys body))))
+                 (r-user-visit id (keywordize-keys body)))
+           (POST "/users/:id/poke"
+                 {{id :id} :params body :body}
+                 (r-user-poke id (body "target"))))
 
   ;;(route/resources "/")
   (ANY "*" []

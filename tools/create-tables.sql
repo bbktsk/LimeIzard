@@ -33,6 +33,14 @@ CREATE TABLE IF NOT EXISTS visits (
        location geography(POINT,4326)
 );
 
+CREATE TABLE IF NOT EXISTS pokes (
+       id SERIAL PRIMARY KEY,
+       source VARCHAR(32),
+       target VARCHAR(32),
+       timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+       seen BOOLEAN
+);
+
 INSERT INTO beacons (name, uuid, label, location, active)
        VALUES ('Tram 7234', 'NJ', 'liz01',
               ST_GeographyFromText('SRID=4326;POINT(14.5 50)'), true),

@@ -43,6 +43,19 @@ SELECT name, uuid, label, active, owner,
        st_y(location::geometry) AS latitude
 FROM beacons WHERE owner = :owner
 
+-- name: q-insert-poke!
+
+INSERT INTO pokes(source, target, seen) VALUES (:source, :target, false)
+
+
+-- name: q-get-user-pokes
+SELECT first_name, mood, message, fb_id id
+FROM pokes p, users u
+WHERE u.fb_id = p.source AND p.target = :self AND p.seen = false;
+
+-- name: q-mark-pokes-seen!
+UPDATE pokes SET seen=true WHERE target=:self
+
 -- name: insert-fix!
 -- Insert location fix into database
 
