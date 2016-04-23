@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE TABLE IF NOT EXISTS beacons (
        id SERIAL PRIMARY KEY,
        name VARCHAR(64),
-       uuid VARCHAR(44) UNIQUE,
+       uuid VARCHAR(64) UNIQUE,
        owner INT4,
        location geography(POINT,4326),
        label VARCHAR(32),
@@ -35,4 +35,9 @@ CREATE TABLE IF NOT EXISTS visits (
 
 INSERT INTO beacons (name, uuid, label, location, active)
        VALUES ('Tram 7234', 'NJ', 'liz01',
-              ST_GeographyFromText('SRID=4326;POINT(14.5 50)'), true); 
+              ST_GeographyFromText('SRID=4326;POINT(14.5 50)'), true),
+              ('DjbX', '11f10af9-8ec0-4e88-bc27-3fb17effe8bf|10998|26482', 'x1', NULL, true),
+              ('xgDa', '11f10af9-8ec0-4e88-bc27-3fb17effe8bf|8454|52608', 'x2', NULL, true);;
+
+
+
