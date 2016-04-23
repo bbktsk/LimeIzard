@@ -19,7 +19,22 @@ UPDATE users
            photo_url = :photo_url,
            sex = :sex
        WHERE fb_id = :fb_id
+
+-- name: q-beacon-by-uuid
+
+SELECT * FROM beacons WHERE uuid = :uuid
+
+-- name: q-insert-visit!
+
+INSERT INTO visits (fb_id, beacon_id, signal, location)
+VALUES (:fb_id, :beacon_id, :signal, ST_GeographyFromText('SRID=4326;POINT(' || :longitude || ' ' || :latitude || ')'))
              
+
+-- name: q-get-nearby
+
+SELECT first_name, mood, message, photo_url, sex, v.fb_id, signal, timestamp
+FROM users u, visits v
+WHERE v.fb_id = u.fb_id AND v.beacon_id = :beacon_id AND v.fb_id != :self;
 
 -- name: insert-fix!
 -- Insert location fix into database

@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS beacons (
        location geography(POINT,4326),
        label VARCHAR(32),
        active BOOLEAN
-
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -26,10 +25,12 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS visits (
-       id SERIAL,
-       user_id INT4 NOT NULL,
+       id SERIAL PRIMARY KEY,
+       fb_id VARCHAR(32) NOT NULL,
        timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-       beacon_id INT4       
+       beacon_id INT4,
+       signal FLOAT,
+       location geography(POINT,4326)
 );
 
 INSERT INTO beacons (name, uuid, label, location, active)

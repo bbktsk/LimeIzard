@@ -1,19 +1,19 @@
 (ns lime-izard.web
-  (:require [compojure.core :refer [defroutes GET PUT POST DELETE ANY context]]
-            [ring.middleware.defaults :refer :all]
-            [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
+  (:require [clojure.java.io :as io]
+            [clojure.java.jdbc :as db]
+            [clojure.walk :refer [keywordize-keys]]
+            [compojure.core :refer [defroutes GET PUT POST DELETE ANY context]]
             [compojure.route :as route]
-            [clojure.java.io :as io]
+            [crypto.random :as random]
+            [environ.core :refer [env]]
+            [liberator.core :refer [resource defresource]]
+            [liberator.dev :refer [wrap-trace]]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.cookies :only [wrap-cookies]]
-            [environ.core :refer [env]]
-            [crypto.random :as random]
-            [yesql.core :refer [defqueries]]
-            [clojure.java.jdbc :as db]
+            [ring.middleware.defaults :refer :all]
+            [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [slingshot.slingshot :refer [throw+]]
-            [clojure.walk :refer [keywordize-keys]]
-            [liberator.core :refer [resource defresource]]
-            [liberator.dev :refer [wrap-trace]]))
+            [yesql.core :refer [defqueries]]))
 
 (defn db-spec
   []
@@ -22,7 +22,7 @@
 (def user-fields [:first_name :last_name :mood :message :photo_url :fb_id :sex
                   :active])
 
-(def visit-fields [:beacon_id :signal :longitude :latitude])
+(def visit-fields [:beacon_uuid :signal :longitude :latitude])
 
 (defn empty-map [fields]
   (apply hash-map (interleave fields (repeat nil))))
@@ -39,7 +39,6 @@
 
 (defn user-update
   [id data]
-  (println data)
   (if-let [current (user-get id)]
     (q-user-update! (assoc (merge current data) :fb_id id))
     (throw+ "internal error, user vanished")))
@@ -58,10 +57,27 @@
   (and (every? visit visit-fields)
        (= (count visit-fields) (count (keys visit)))))
 
+(defn beacon-by-uuid
+  [uuid]
+  (first (q-beacon-by-uuid {:uuid uuid })))
+
+(defn keep-latest
+  [s]
+  (->> s
+       (group-by :fb_id)
+       vals
+       (map (fn [s] (sort-by :timestamp s)))
+       (map last)
+       (map (fn [x] (dissoc x :timestamp)))))
 
 (defn handle-visit
   [id visit]
-  (println visit)
+  (let [beacon-uuid (:beacon_uuid visit)
+        beacon (beacon-by-uuid beacon-uuid)
+        beacon-id (:id beacon)
+        _ (println beacon-uuid beacon-id beacon)]
+    (q-insert-visit! (assoc visit :fb_id id :beacon_id beacon-id))
+    {:people (keep-latest (q-get-nearby {:beacon_id beacon-id :self id}))})
   )
 
 (defresource r-user-get [id]
@@ -87,7 +103,8 @@
   :available-media-types ["application/json"]
   :exists? (fn [ctx] (user-get id))
   :malformed? (fn [ctx] (not (visit-valid? visit)))
-  :post! (fn [_] (handle-visit id visit)))
+  :post! (fn [_] {:result (handle-visit id visit)})
+  :handle-created :result)
 
 
 (defroutes app
