@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS beacons (
        id SERIAL PRIMARY KEY,
        name VARCHAR(64),
        uuid VARCHAR(64) UNIQUE,
-       owner INT4,
+       owner VARCHAR(32),
        location geography(POINT,4326),
        label VARCHAR(32),
        active BOOLEAN

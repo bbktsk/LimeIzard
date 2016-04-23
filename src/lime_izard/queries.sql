@@ -36,6 +36,13 @@ SELECT first_name, mood, message, photo_url, sex, v.fb_id, signal, timestamp
 FROM users u, visits v
 WHERE v.fb_id = u.fb_id AND v.beacon_id = :beacon_id AND v.fb_id != :self;
 
+-- name: q-user-beacons
+
+SELECT name, uuid, label, active, owner,
+       st_x(location::geometry) AS longitude,
+       st_y(location::geometry) AS latitude
+FROM beacons WHERE owner = :owner
+
 -- name: insert-fix!
 -- Insert location fix into database
 

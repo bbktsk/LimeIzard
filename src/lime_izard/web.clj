@@ -77,13 +77,19 @@
         beacon-id (:id beacon)
         _ (println beacon-uuid beacon-id beacon)]
     (q-insert-visit! (assoc visit :fb_id id :beacon_id beacon-id))
-    {:people (keep-latest (q-get-nearby {:beacon_id beacon-id :self id}))})
-  )
+    {:people (keep-latest (q-get-nearby {:beacon_id beacon-id :self id}))}))
+
+
 
 (defresource r-user-get [id]
   :available-media-types ["application/json"]
   :exists? (fn [ctx] (if-let [x (user-get id)] {:user x}))
   :handle-ok :user)
+
+(defresource r-user-get-beacons [id]
+  :available-media-types ["application/json"]
+  :exists? (fn [ctx] (if-let [x (user-get id)] {:user x}))
+  :handle-ok (fn [_] (q-user-beacons {:owner id})))
 
 (defresource r-user-create [data]
   ;;; FIXME should check for existing user
@@ -118,6 +124,9 @@
            (GET "/users/:id"
                 [id]
                 (r-user-get id))
+           (GET "/users/:id/beacons"
+                [id]
+                (r-user-get-beacons id))
            (POST "/users/:id/visit"
                  {{id :id} :params body :body}
                  (r-user-visit id (keywordize-keys body))))
