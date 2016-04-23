@@ -12,6 +12,7 @@
             [ring.middleware.cookies :only [wrap-cookies]]
             [ring.middleware.defaults :refer :all]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [slingshot.slingshot :refer [throw+]]
             [yesql.core :refer [defqueries]]))
 
@@ -162,6 +163,8 @@
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 5000))]
     (jetty/run-jetty (-> #'app
+                         (wrap-cors :access-control-allow-origin [#".*"]
+                                    :access-control-allow-methods [:get :put :post :delete])
                          (wrap-trace :header :ui)
                          wrap-json-response
                          wrap-json-body
