@@ -90,6 +90,12 @@
     (q-mark-pokes-seen! {:self id})
     pokes))
 
+(defn handle-beacon-update
+  [old new]
+  (prn old)
+  (prn new)
+  (q-beacon-update! (merge old new)))
+
 (defresource r-user-get [id]
   :available-media-types ["application/json"]
   :exists? (fn [ctx] (if-let [x (user-get id)] {:user x}))
@@ -125,7 +131,7 @@
   :allowed-methods [:post]
   :available-media-types ["application/json"]
   :exists? (fn [ctx] (user-get id))
-  :malformed? (fn [ctx] (println target)(not (user-get target)))
+  :malformed? (fn [ctx] (not (user-get target)))
   :post! (fn [_] (handle-poke id target)))
 
 (defresource r-user-get-pokes [id]
@@ -133,6 +139,17 @@
   :available-media-types ["application/json"]
   :exists? (fn [ctx] (user-get id))
   :handle-ok (handle-get-user-pokes id))
+
+(defresource r-beacon-get [uuid]
+  :available-media-types ["application/json"]
+  :exists? (fn [ctx] (if-let [x (beacon-by-uuid uuid)] {:beacon x}))
+  :handle-ok :beacon)
+
+(defresource r-beacon-update [uuid data]
+  :available-media-types ["application/json"]
+  :allowed-methods [:post]
+  :exists? (fn [ctx] (if-let [x (beacon-by-uuid uuid)] {:beacon x}))
+  :post! (fn [ctx] (handle-beacon-update (:beacon ctx) (keywordize-keys data))))
 
 (defroutes app
   (context "/api" []
@@ -153,7 +170,13 @@
                  (r-user-visit id (keywordize-keys body)))
            (POST "/users/:id/poke"
                  {{id :id} :params body :body}
-                 (r-user-poke id (body "target"))))
+                 (r-user-poke id (body "target")))
+           (GET "/beacons/:uuid"
+                [uuid]
+                (r-beacon-get uuid))
+           (POST "/beacons/:uuid"
+                 {{uuid :uuid} :params data :body}
+                 (r-beacon-update uuid data)))
 
   ;;(route/resources "/")
   (ANY "*" []

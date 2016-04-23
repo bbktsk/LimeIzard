@@ -22,7 +22,8 @@ UPDATE users
 
 -- name: q-beacon-by-uuid
 
-SELECT * FROM beacons WHERE uuid = :uuid
+SELECT uuid, name, label, active, owner, st_x(location::geometry) AS longitude,
+st_y(location::geometry) AS latitude FROM beacons WHERE uuid = :uuid
 
 -- name: q-insert-visit!
 
@@ -56,24 +57,10 @@ WHERE u.fb_id = p.source AND p.target = :self AND p.seen = false;
 -- name: q-mark-pokes-seen!
 UPDATE pokes SET seen=true WHERE target=:self
 
--- name: insert-fix!
--- Insert location fix into database
-
-INSERT
-        INTO fixes (user_id, location, altitude, accuracy)
-        VALUES (:user_id, ST_GeographyFromText('SRID=4326;POINT(' || :longitude || ' ' || :latitude || ')'), :altitude, :accuracy)
-
--- name: all-fixes
-
-SELECT timestamp, user_id, st_x(location::geometry) AS longitude, st_y(location::geometry) AS latitude FROM fixes
-
-
--- name: latest-fix
-SELECT timestamp,
-       st_x(location::geometry) AS longitude,
-       st_y(location::geometry) AS latitude,
-       accuracy
-FROM fixes
-WHERE id=(SELECT max(id) FROM fixes WHERE user_id = :user_id)
-        
-
+-- name: q-beacon-update!
+UPDATE beacons SET name=:name,
+                   label=:label,
+                   active=:active
+               WHERE
+                   uuid=:uuid
+                   
