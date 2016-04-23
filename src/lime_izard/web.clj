@@ -168,6 +168,9 @@
            (POST "/users/:id/visit"
                  {{id :id} :params body :body}
                  (r-user-visit id (keywordize-keys body)))
+           (GET "/users/:id/poke"
+                [id]
+                (r-user-get-pokes id))
            (POST "/users/:id/poke"
                  {{id :id} :params body :body}
                  (r-user-poke id (body "target")))
