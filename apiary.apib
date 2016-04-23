@@ -1,0 +1,177 @@
+FORMAT: 1A
+HOST: http://lime-izard.herokuapp.com/api
+
+# Lime Izard
+
+Lime Izard is a Tinder for commuters
+
+## Users [/users]
+
+### Create new user [POST]
+
+Users are identified by their facebook id.
+
++ Request (application/json)
+
+        {
+            "fb_id": "zxcvbnmlkj",
+            "first_name": "Josef",
+            "last_name": "Novak,
+            "mood": "happy",
+            "active": true,
+            "message": "Life is beautiful!",
+            "sex": "male",
+            "photo_url": "http://facebook.com/photos/12345.jpg"
+        }
+        
++ Response 201
+
+## User [/users/{id}]
+
+Users are identified by their facebook id.
+
+### Get user info [GET]
+
++ Response 200 (application/json)
+
+        {
+            "first_name": "Petr",
+            "last_name": "Novak",
+            "sex": "male",
+            "mood": "happy",
+            "active": true,
+            "message": "Life is beautiful!",
+            "photo_url": "http://somewhere"
+        }
+        
++ Response 404
+            
+### Update an user [PUT]
+
+Any field in the PUT request structure may be missing. 
+In that case, it will not be updated.
+
++ Request (application/json)
+        
+        {
+            "first_name": "Josef",
+            "last_name": "Novak,
+            "mood": "happy",
+            "active": true,
+            "message": "Life is beautiful!",
+            "sex": "male",
+            "photo_url": "http://facebook.com/photos/12345.jpg"
+        }
+        
++ Response 202 
+
+
+## User's beacons [/users/{id}/beacons]
+
+### List [GET]
+
++ Response 200 (application/json)
+
+        [
+            {
+            "name": "Kavarna The Farm",
+            "id": "EDD1EBEAC04E5DEFA017-0BDB87539B67",
+            "active": true,
+            "stationary": true,
+            "latitude": 14.4160084,
+            "longitude": 50.1010032
+            }   
+        ]
+        
+## Visits [/users/{id}/visit]
+
+### Visit a beacon [POST]
+
+To unvisit a beacon, just post a empty payload.
+
++ Request (application/json)
+
+        {
+            "beacon_id": "abxdeferfasdasdawer",
+            "signal": 89.4,
+            "longitude": 14.3,
+            "latitude": 50.1
+        }
+        
++ Response 202 (application/json) 
+
+        {
+            "people": [
+                {
+                    "first_name": "Eva",
+                    "signal": 98.1,
+                    "mood": "happy",
+                    "message": "Svobodu Tibetu!",
+                    "photo_url": "http://facebook.com/photos/123123.jpeg"
+                }
+            ]
+                
+        }
+        
+## User notifications [/users/{id}/poke]
+
+### Get received pokes [GET]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "first_name": "Jana",
+                "mood": "happy",
+                "message": "Svobodu Tibetu!",
+                "id": "ABCEDF1234567890",
+            }
+        ]
+        
+### Poke user [POST]
+
++ Request (application/json)
+
+        { 
+            "target": "ABCDEF1234567890",
+        }
+        
++ Response 202
+
++ Response 404
+
+## Beacon collection [/beacons]
+
+### Create a beacon [POST]
+
+You may create your own beacons using this action. 
+Latitude and longitude are valid for stationary beacons only.
+
++ Request (application/json)
+
+        {
+            "name": "Kavarna The Farm",
+            "id": "EDD1EBEAC04E5DEFA017-0BDB87539B67",
+            "stationary": true,
+            "latitude": 14.4160084,
+            "longitude": 50.1010032
+        }
+
++ Response 201 (application/json)
+
+    + Headers
+
+            Location: /beacon/2
+
+## Beacon [/beacons/{id}]
+
+### Get beacon information [GET]
+
++ Response 200 (application/json)
+
+        {
+            "name": "Mazaci tramvaj",
+            "stationary": false,
+            "current": 2,
+            "total": 8246
+        }
